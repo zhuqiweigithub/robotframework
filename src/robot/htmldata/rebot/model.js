@@ -231,8 +231,8 @@ window.stats = (function () {
     }
 
     function statElem(stat) {
-        stat.total = stat.pass + stat.fail;
-        var percents = calculatePercents(stat.total, stat.pass, stat.fail);
+        stat.total = stat.pass + stat.fail + stat.skipped;
+        var percents = calculatePercents(stat.total, stat.pass, stat.fail, stat.skipped);
         stat.passPercent = percents[0];
         stat.failPercent = percents[1];
         var widths = calculateWidths(stat.passPercent, stat.failPercent);
@@ -269,9 +269,12 @@ window.stats = (function () {
             });
     }
 
-    function calculatePercents(total, passed, failed) {
-        if (total == 0)
+    function calculatePercents(total, passed, failed, skipped) {
+        total = total - skipped
+        if (total == 0) {
             return [0.0, 0.0];
+        }
+
         var pass = 100.0 * passed / total;
         var fail = 100.0 * failed / total;
         if (pass > 0 && pass < 0.1)

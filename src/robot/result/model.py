@@ -118,14 +118,14 @@ class TestCase(model.TestCase):
 
     See the base class for documentation of attributes not documented here.
     """
-    __slots__ = ['status', 'message', 'starttime', 'endtime']
+    __slots__ = ['_status', 'message', 'starttime', 'endtime']
     keyword_class = Keyword
 
     def __init__(self, name='', doc='', tags=None, timeout=None, status='FAIL',
                  message='', starttime=None, endtime=None):
         model.TestCase.__init__(self, name, doc, tags, timeout)
         #: Status as a string ``PASS`` or ``FAIL``. See also :attr:`passed`.
-        self.status = status
+        self._status = status
         #: Test message. Typically a failure message but can be set also when
         #: test passes.
         self.message = message
@@ -133,6 +133,14 @@ class TestCase(model.TestCase):
         self.starttime = starttime
         #: Test case execution end time in format ``%Y%m%d %H:%M:%S.%f``.
         self.endtime = endtime
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, status):
+        self._status = status
 
     @property
     def elapsedtime(self):
@@ -144,9 +152,9 @@ class TestCase(model.TestCase):
         """``True/False`` depending on the :attr:`status`."""
         return self.status == 'PASS'
 
-    @passed.setter
-    def passed(self, passed):
-        self.status = 'PASS' if passed else 'FAIL'
+    @property
+    def skipped(self):
+        return self.status == 'SKIP'
 
     @property
     def critical(self):
@@ -183,7 +191,7 @@ class TestSuite(model.TestSuite):
     @property
     def passed(self):
         """``True`` if no critical test has failed, ``False`` otherwise."""
-        return not self.statistics.critical.failed
+        return not self.statistics.all.failed
 
     @property
     def status(self):
