@@ -25,7 +25,7 @@ class Stat(Sortable):
 
     def __init__(self, name):
         #: Human readable identifier of the object these statistics
-        #: belong to. Either `All Tests` or `Critical Tests` for
+        #: belong to. `All Tests` for
         #: :class:`~robot.model.totalstatistics.TotalStatistics`,
         #: long name of the suite for
         #: :class:`~robot.model.suitestatistics.SuiteStatistics`
@@ -178,18 +178,6 @@ class CombinedTagStat(TagStat):
     def __init__(self, pattern, name=None, doc='', links=None):
         TagStat.__init__(self, name or pattern, doc, links, combined=pattern)
         self.pattern = TagPattern(pattern)
-
-    def match(self, tags):
-        return self.pattern.match(tags)
-
-
-class CriticalTagStat(TagStat):
-
-    def __init__(self, tag_pattern, name=None, critical=True, doc='',
-                 links=None):
-        TagStat.__init__(self, name or unicode(tag_pattern), doc, links,
-                         critical=critical, non_critical=not critical)
-        self.pattern = tag_pattern
 
     def match(self, tags):
         return self.pattern.match(tags)
