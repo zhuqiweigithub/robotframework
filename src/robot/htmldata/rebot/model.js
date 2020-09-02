@@ -49,11 +49,6 @@ window.model = (function () {
                 return true;
             });
         };
-        suite.criticalTests = function () {
-            return suite.searchTests(function (test) {
-                return test.isCritical;
-            });
-        };
         return suite;
     }
 
