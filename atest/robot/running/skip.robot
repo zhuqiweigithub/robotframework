@@ -79,12 +79,18 @@ Skipped with --skip
 Skipped with --SkipOnFailure
     Check Test Case    ${TEST NAME}
 
-Using Skip Does Not Affect Passing And Failing Tests
-    Check Test Case    Passing Test
-    Check Test Case    Failing Test
+--SkipOnFailure when skipping tag is added dynamically
+    Check Test Case    ${TEST NAME}
+
+--SkipOnFailure when skipping tag is removed dynamically
+    Check Test Case    ${TEST NAME}
 
 --NonCritical Is an Alias for --SkipOnFailure
     Check Test Case    ${TEST NAME}
 
 --Critical can be used to override --SkipOnFailure
     Check Test Case    ${TEST NAME}
+
+Using Skip Does Not Affect Passing And Failing Tests
+    Check Test Case    Passing Test
+    Check Test Case    Failing Test

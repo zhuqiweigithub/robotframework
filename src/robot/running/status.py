@@ -156,34 +156,34 @@ class TestStatus(_ExecutionStatus):
                  rpa=False):
         _ExecutionStatus.__init__(self, parent)
         self.exit = parent.exit
-        self._skip_on_failure = self._should_skip_on_failure(
-            test, skip_on_failure, critical_tags)
+        self._test = test
+        self._skip_on_failure = skip_on_failure
+        self._critical_tags = critical_tags
         self._rpa = rpa
 
     def test_failed(self, failure):
         if hasattr(failure, 'skip') and failure.skip:
             self.test_skipped(failure)
-        elif self._skip_on_failure:
-            msg = ("%s failed but its tags matched '--SkipOnFailure' and it was "
-                   "marked skipped.\n\nOriginal failure:\n%s"
-                   % (test_or_task('{Test}', self._rpa), unic(failure)))
+        elif self._should_skip_on_failure:
+            msg = ("Failing %s was marked skipped because skip-on-failure mode was "
+                   "active.\n\nOriginal failure:\n%s"
+                   % (test_or_task(task=self._rpa), unic(failure)))
             self.failure.test = msg
             self.skipped = True
         else:
             self.failure.test = unic(failure)
             self.exit.failure_occurred(failure)
 
+    @property
+    def _should_skip_on_failure(self):
+        tags = self._test.tags
+        if TagPatterns(self._critical_tags).match(tags):
+            return False
+        return TagPatterns(self._skip_on_failure).match(tags)
+
     def test_skipped(self, reason):
         self.skipped = True
         self.failure.test_skipped = unic(reason)
-
-    def _should_skip_on_failure(self, test, skip_on_failure_tags,
-                                critical_tags):
-        critical_pattern = TagPatterns(critical_tags)
-        if critical_pattern and critical_pattern.match(test.tags):
-            return False
-        skip_on_fail_pattern = TagPatterns(skip_on_failure_tags)
-        return skip_on_fail_pattern and skip_on_fail_pattern.match(test.tags)
 
     def _my_message(self):
         return TestMessage(self).message

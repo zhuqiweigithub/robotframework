@@ -1,8 +1,8 @@
 *** Settings ***
-Library    skiplib.py
+Library            skiplib.py
 
 *** Variables ***
-${TEST_OR_TASK}    Test
+${TEST_OR_TASK}    test
 
 *** Test Cases ***
 Skip Keyword
@@ -147,22 +147,37 @@ Skip in Teardown with Pass Execution in Body
     [Teardown]    Skip  Then we skip
 
 Skipped with --skip
-    [Documentation]    SKIP ${TEST_OR_TASK} skipped with '--skip' command line option.
+    [Documentation]    SKIP ${TEST_OR_TASK.title()} skipped with '--skip' command line option.
     [Tags]    skip-this
     Fail
 
 Skipped with --SkipOnFailure
     [Documentation]    SKIP
-    ...    ${TEST_OR_TASK} failed but its tags matched '--SkipOnFailure' and it was marked skipped.
+    ...    Failing  ${TEST_OR_TASK} was marked skipped because skip-on-failure mode was active.
     ...
     ...    Original failure:
     ...    Ooops, we fail!
     [Tags]    skip-on-failure
     Fail    Ooops, we fail!
 
+--SkipOnFailure when skipping tag is added dynamically
+    [Documentation]    SKIP
+    ...    Failing ${TEST_OR_TASK} was marked skipped because skip-on-failure mode was active.
+    ...
+    ...    Original failure:
+    ...    This test should be skipped
+    Set Tags    skip-on-failure
+    Fail    This test should be skipped
+
+--SkipOnFailure when skipping tag is removed dynamically
+    [Documentation]    FAIL This test should fail
+    [Tags]    skip-on-failure
+    Remove Tags    skip-on-failure
+    Fail    This test should fail
+
 --NonCritical Is an Alias for --SkipOnFailure
     [Documentation]    SKIP
-    ...    ${TEST_OR_TASK} failed but its tags matched '--SkipOnFailure' and it was marked skipped.
+    ...    Failing ${TEST_OR_TASK} was marked skipped because skip-on-failure mode was active.
     ...
     ...    Original failure:
     ...    AssertionError
