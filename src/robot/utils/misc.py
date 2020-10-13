@@ -127,15 +127,27 @@ def seq2str2(sequence):
     return '[ %s ]' % ' | '.join(unic(item) for item in sequence)
 
 
-def test_or_task(text, rpa):
-    """If `rpa` is True, replaces occurrences of `{test}` in `text` with `task`."""
-    def t(match):
-        if not rpa:
-            return match.group(1)
-        try:
-            return {
-                'TEST': 'TASK', 'Test': 'Task', 'test': 'task'
-            }[match.group(1)]
-        except KeyError:
+def test_or_task(text='test', task=False):
+    """Converts 'test' to 'task' in the given text if `task` is True.
+
+    The text can be in two formats:
+    -  A template with '{test}' used as a marker to be replaced with 'test' or 'task'
+       depending on is `task` true or not. For example, 'Example {test}'.
+    - Just wort 'test' that is converted to 'task' if `task` is true.
+
+    In both cases it's possible to use any of the variants 'test', 'Test' or 'TEST' as
+    well as their plural forms like 'tests'. If `task` is true, the return value then
+    has 'task' in matching format like 'Task' or 'TASKS'.
+    """
+    test_to_task = {'TEST': 'TASK', 'Test': 'Task', 'test': 'task',
+                    'TESTS': 'TASKS', 'Tests': 'Tasks', 'tests': 'tasks'}
+    if text in test_to_task:
+        return text if not task else test_to_task[text]
+
+    def replace(match):
+        matched = match.group(1)
+        if matched not in test_to_task:
             raise ValueError("Invalid input string '%s'." % text)
-    return re.sub('{(.*)}', t, text)
+        return matched if not task else test_to_task[matched]
+
+    return re.sub('{(.*?)}', replace, text)

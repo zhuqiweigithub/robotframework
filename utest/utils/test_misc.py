@@ -157,22 +157,37 @@ class TestPluralOrNot(unittest.TestCase):
             assert_equal(plural_or_not(plural), 's')
 
 
-
 class TestTestOrTask(unittest.TestCase):
+    tests_and_tasks = [
+        ('Test', 'Task'),
+        ('test', 'task'),
+        ('TEST', 'TASK'),
+        ('Tests', 'Tasks'),
+        ('tests', 'tasks'),
+        ('TESTS', 'TASKS'),
+    ]
 
-    def test_test_or_task(self):
-        for inp, rpa, exp in [
-            ('{Test}', False, 'Test'),
-            ('{test}', False, 'test'),
-            ('{TEST}', False, 'TEST'),
-            ('{Test}', True, 'Task'),
-            ('{test}', True, 'task'),
-            ('{TEST}', True, 'TASK'),
-            ('Contains {test}', False, 'Contains test'),
-            ('Contains {TEST}', True, 'Contains TASK'),
-            ('Does not contain match', False, 'Does not contain match')
-        ]:
-            assert_equal(test_or_task(inp, rpa), exp)
+    def test_template(self):
+        for test, task in self.tests_and_tasks:
+            assert_equal(test_or_task('{%s}' % test), test)
+            assert_equal(test_or_task('{%s}' % test, task=True), task)
+            assert_equal(test_or_task('Contains {%s}' % test), 'Contains %s' % test)
+            assert_equal(test_or_task('Contains {%s}' % test, True), 'Contains %s' % task)
+
+    def test_template_with_multiple_markers(self):
+        assert_equal(test_or_task('{Test} or {test} or {TESTS}'),
+                     'Test or test or TESTS')
+        assert_equal(test_or_task('{Test} or {test} or {TESTS}', task=True),
+                     'Task or task or TASKS')
+
+    def test_just_test(self):
+        for test, task in self.tests_and_tasks:
+            assert_equal(test_or_task(test), test)
+            assert_equal(test_or_task(test, task=True), task)
+
+    def test_default_text(self):
+        assert_equal(test_or_task(), 'test')
+        assert_equal(test_or_task(task=True), 'task')
 
     def test_test_or_task_fails_with_invalid_pattern_in_braces(self):
         assert_raises_with_msg(
