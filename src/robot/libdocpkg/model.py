@@ -70,9 +70,9 @@ class LibraryDoc(object):
 
     @property
     def data_types_list(self):
-        return sorted([type_tuple[1].to_dictionary()
-                       for type_tuple in self._data_types.items()],
-                      key=lambda type_dict: type_dict['name'])
+        return sorted([type_doc
+                       for type_doc in self._data_types.values()],
+                      key=lambda type_dict: type_dict.name)
 
     def _add_toc(self, doc):
         toc = self._create_toc(doc)
@@ -116,7 +116,9 @@ class LibraryDoc(object):
                         self._data_types[type_repr] = self._get_type_doc(_type)
 
     def _get_type_doc(self, arg_type):
-        if self._is_TypedDictType(arg_type):
+        if isinstance(arg_type, (EnumDoc, TypedDictDoc)):
+            return arg_type
+        elif self._is_TypedDictType(arg_type):
             return TypedDictDoc(arg_type)
         elif self._is_EnumType(arg_type):
             return EnumDoc(arg_type)
@@ -145,6 +147,8 @@ class LibraryDoc(object):
             LibdocWriter(format).write(self, outfile)
 
     def convert_docs_to_html(self):
+        #if self.doc_format == 'HTML':
+        #    return
         formatter = DocFormatter(self.keywords, self.doc, self.doc_format)
         self._doc = formatter.html(self.doc, intro=True)
         self.doc_format = 'HTML'
@@ -169,7 +173,7 @@ class LibraryDoc(object):
             'keywords': [kw.to_dictionary() for kw in self.keywords],
             'generated': get_timestamp(daysep='-', millissep=None),
             'all_tags': list(self.all_tags),
-            'data_types': self.data_types_list
+            'data_types': [dt.to_dictionary() for dt in self.data_types_list]
         }
 
     def to_json(self, indent=None):
@@ -343,7 +347,7 @@ class EnumDoc:
             self.super = 'Enum'
             self.doc = type_info.__doc__ if type_info.__doc__ else ''
             for name, member in type_info._member_map_.items():
-                self.members.append({'name': name, 'value': member.value})
+                self.members.append({'name': name, 'value': unicode(member.value)})
         elif isinstance(type_info, EnumDoc):
             self.name = type_info.name
             self.super = type_info.super
