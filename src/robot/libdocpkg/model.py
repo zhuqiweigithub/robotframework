@@ -18,7 +18,11 @@ from inspect import isclass
 from itertools import chain
 import json
 import re
-from enum import Enum
+try:
+    from enum import Enum
+except ImportError:  # Standard in Py 3.4+ but can be separately installed
+    class Enum(object):
+        pass
 
 try:
     from typing_extensions import TypedDict
@@ -277,7 +281,6 @@ class TypedDictDoc:
 
     def __init__(self,
                  type_info=None,
-                 *,
                  name='',
                  super='',
                  doc='',
@@ -328,7 +331,6 @@ class EnumDoc:
 
     def __init__(self,
                  type_info=None,
-                 *,
                  name='',
                  super='',
                  doc='',
