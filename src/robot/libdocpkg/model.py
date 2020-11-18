@@ -167,13 +167,13 @@ class LibraryDoc(object):
             'generated': get_timestamp(daysep='-', millissep=None),
             'type': self.type,
             'scope': self.scope,
-            'doc_format': self.doc_format,
+            'docFormat': self.doc_format,
             'source': self.source,
             'lineno': self.lineno,
-            'all_tags': list(self.all_tags),
+            'allTags': list(self.all_tags),
             'inits': [init.to_dictionary() for init in self.inits],
             'keywords': [kw.to_dictionary() for kw in self.keywords],
-            'data_types': [dt.to_dictionary() for dt in self.data_types]
+            'dataTypes': [dt.to_dictionary() for dt in self.data_types]
         }
 
     def to_json(self, indent=None):

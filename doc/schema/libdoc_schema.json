@@ -74,12 +74,12 @@
       },
       "uniqueItems": true
     },
-    "data_types": {
+    "dataTypes": {
       "type": "array",
       "items": {
         "oneOf": [
-          {"$ref": "#/definitions/typed_dict_type"},
-          {"$ref": "#/definitions/enum_type"}
+          {"$ref": "#/definitions/typedDictType"},
+          {"$ref": "#/definitions/enumType"}
         ]
       },
       "uniqueItems": true
@@ -198,8 +198,8 @@
         }
       }
     },
-    "enum_type": {
-      "$id": "#/definitions/enum_type",
+    "enumType": {
+      "$id": "#/definitions/enumType",
       "type": "object",
       "title": "Enum DataType schema",
       "required": [
@@ -244,8 +244,8 @@
         }
       }
     },
-    "typed_dict_type": {
-      "$id": "#/definitions/typed_dict_type",
+    "typedDictType": {
+      "$id": "#/definitions/typedDictType",
       "type": "object",
       "title": "TypedDict Type schema",
       "required": [

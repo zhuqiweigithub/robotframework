@@ -55,8 +55,8 @@
         parseTemplates();
         document.title = libdoc.name;
         storage.init('libdoc');
-        libdoc.data_types = libdoc.data_types.filter(function (d) {return d.name});
-        const typeNames = libdoc.data_types.map(function (d) {return d.name});
+        libdoc.dataTypes = libdoc.dataTypes.filter(function (d) {return d.name});
+        const typeNames = libdoc.dataTypes.map(function (d) {return d.name});
         linkArgs(libdoc.inits, typeNames);
         linkArgs(libdoc.keywords, typeNames);
         renderTemplate('base', libdoc, $('body'));
@@ -480,10 +480,10 @@
 </script>
 
 <script type="text/x-jquery-tmpl" id="data-types-template">
-    {{if data_types.length}}
+    {{if dataTypes.length}}
     <h2 id="Data types">Data types</h2>
     <div class="data-types">
-        {{each data_types}}
+        {{each dataTypes}}
             {{tmpl($value) 'data-type-template'}}
         {{/each}}
     </div>
