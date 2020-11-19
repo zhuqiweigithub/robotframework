@@ -97,10 +97,7 @@
     "lineno",
     "inits",
     "keywords",
-    "all_tags"
     "tags"
-    "data_types",
-    "all_tags"
   ],
   "definitions": {
     "keyword": {

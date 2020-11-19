@@ -167,7 +167,7 @@ class LibraryDoc(object):
             'docFormat': self.doc_format,
             'source': self.source,
             'lineno': self.lineno,
-            'allTags': list(self.all_tags),
+            'tags': list(self.all_tags),
             'inits': [init.to_dictionary() for init in self.inits],
             'keywords': [kw.to_dictionary() for kw in self.keywords],
             'dataTypes': [dt.to_dictionary() for dt in self.data_types]
