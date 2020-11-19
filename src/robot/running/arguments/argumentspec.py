@@ -14,6 +14,7 @@
 #  limitations under the License.
 
 from inspect import isclass
+import re
 import sys
 
 try:
@@ -129,21 +130,21 @@ class ArgInfo(object):
     NAMED_ONLY = 'NAMED_ONLY'
     VAR_NAMED = 'VAR_NAMED'
 
-    def __init__(self, kind, name='', type=NOTSET, default=NOTSET):
+    def __init__(self, kind, name='', types=NOTSET, default=NOTSET):
         self.kind = kind
         self.name = name
-        self.type = type
+        self.types = types
         self.default = default
 
     @setter
-    def type(self, _type):
-        if not _type or _type is self.NOTSET:
+    def types(self, typ):
+        if not typ or typ is self.NOTSET:
             return tuple()
-        if isinstance(_type, (tuple, list)):
-            return tuple(_type)
-        if getattr(_type, '__origin__', None) is Union:
-            return self._get_union_args(_type)
-        return (_type,)
+        if isinstance(typ, tuple):
+            return typ
+        if getattr(typ, '__origin__', None) is Union:
+            return self._get_union_args(typ)
+        return (typ,)
 
     def _get_union_args(self, union):
         try:
@@ -163,22 +164,15 @@ class ArgInfo(object):
         return False
 
     @property
-    def type_repr(self):
-        t = self.type_as_repr_list
-        if not t:
-            return None
-        return ' | '.join(t)
+    def types_reprs(self):
+        return [self._type_repr(t) for t in self.types]
 
-    @property
-    def type_as_repr_list(self):
-        return [self._type_repr(t) for t in self.type]
-
-    def _type_repr(self, _type):
-        if _type == type(None):
+    def _type_repr(self, typ):
+        if typ == type(None):
             return 'None'
-        if isclass(_type):
-            return _type.__name__
-        return unic(_type).replace('typing.', '', 1)
+        if isclass(typ):
+            return typ.__name__
+        return re.sub(r'^typing\.(.+)', lambda m: m.group(1), unic(typ))
 
     @property
     def default_repr(self):
@@ -198,8 +192,8 @@ class ArgInfo(object):
             ret = '*' + ret
         elif self.kind == self.VAR_NAMED:
             ret = '**' + ret
-        if self.type:
-            ret = '%s: %s' % (ret, self.type_repr)
+        if self.types:
+            ret = '%s: %s' % (ret, ' | '.join(self.types_reprs))
             default_sep = ' = '
         else:
             default_sep = '='

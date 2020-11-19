@@ -136,7 +136,7 @@ Verify Arguments Structure
         ${required}=    Get Element Attribute        ${arg_elem}    required
         ${repr}=        Get Element Attribute        ${arg_elem}    repr
         ${name}=        Get Element Optional Text    ${arg_elem}    name
-        ${type}=        Get Element List Texts       ${arg_elem}    type
+        ${type}=       Get Element List Texts       ${arg_elem}    type
         ${default}=     Get Element Optional Text    ${arg_elem}    default
         ${arg_model}=    Create Dictionary
         ...    kind=${kind}
@@ -171,8 +171,13 @@ Get Element Optional Text
     [Return]    ${text}
 
 Verify Argument Model
-    [Arguments]    ${arg_model}    ${expected_repr}
-    ${repr}=   Get Repr From Arg Model    ${arg_model}
+    [Arguments]    ${arg_model}    ${expected_repr}    ${json}=False
+    Log  ${arg_model}
+    IF    ${json}
+        ${repr}=   Get Repr From Json Arg Model    ${arg_model}
+    ELSE
+        ${repr}=   Get Repr From Arg Model    ${arg_model}
+    END
     Should Be Equal As Strings    ${repr}    ${expected_repr}
     Should Be Equal As Strings    ${arg_model}[repr]    ${expected_repr}
 

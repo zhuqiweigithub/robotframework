@@ -26,7 +26,8 @@ class LibdocXmlWriter(object):
         self._write_start(libdoc, writer)
         self._write_keywords('inits', 'init', libdoc.inits, libdoc.source, writer)
         self._write_keywords('keywords', 'kw', libdoc.keywords, libdoc.source, writer)
-        self._write_data_types(libdoc.data_types, writer)
+        self._write_data_types(
+            sorted(libdoc.data_types, key=lambda t: t.name), writer)
         self._write_end(writer)
 
     def _write_start(self, libdoc, writer):
@@ -94,8 +95,8 @@ class LibdocXmlWriter(object):
                                  'repr': unicode(arg)})
             if arg.name:
                 writer.element('name', arg.name)
-            if arg.type and arg.type is not arg.NOTSET:
-                for type_repr in arg.type_as_repr_list:
+            if arg.types:
+                for type_repr in arg.types_reprs:
                     writer.element('type', type_repr)
             if arg.default is not arg.NOTSET:
                 writer.element('default', arg.default_repr)

@@ -75,9 +75,9 @@ class JsonDocBuilder(object):
             default = arg['default']
             if default is not None:
                 spec.defaults[name] = default
-            arg_type = arg['type']
+            arg_type = arg['types']
             if arg_type is not None:
                 if not spec.types:
                     spec.types = {}
-                spec.types[name] = arg_type
+                spec.types[name] = tuple(arg_type)
         return spec

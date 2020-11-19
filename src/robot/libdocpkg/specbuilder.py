@@ -90,7 +90,7 @@ class SpecDocBuilder(object):
             if type_elems is not None:
                 if not spec.types:
                     spec.types = {}
-                spec.types[name] = [t.text for t in type_elems]
+                spec.types[name] = tuple(t.text for t in type_elems)
         return spec
 
     def _create_data_types(self, spec):
@@ -106,7 +106,7 @@ class SpecDocBuilder(object):
                 {'name': member.get('name'), 'value': member.get('value')}
                 for member in dt.findall('members/member')]
             return EnumDoc(**args)
-        elif args['super'] == 'TypedDict':
+        if args['super'] == 'TypedDict':
             args['items'] = dict()
             args['required_keys'] = list()
             args['optional_keys'] = list()
@@ -118,3 +118,6 @@ class SpecDocBuilder(object):
                 else:
                     args['optional_keys'].append(key)
             return TypedDictDoc(**args)
+        raise TypeError("Data type '%s' has the wrong 'type' attribute."
+                        "Valid are 'Enum' or 'TypedDict' but got %s"
+                        % (args['name'], args['super']))

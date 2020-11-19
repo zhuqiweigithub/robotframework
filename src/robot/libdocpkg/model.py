@@ -61,19 +61,18 @@ class LibraryDoc(object):
         self.doc_format = doc_format
         self.source = source
         self.lineno = lineno
-        self._data_types = {}
+        self.data_types_catalog = {}
         self.inits = []
         self.keywords = []
 
     @property
     def data_types(self):
-        return sorted([type_doc for type_doc in self._data_types.values()],
-                      key=lambda type_doc: type_doc.name)
+        return self.data_types_catalog.values()
 
     @data_types.setter
     def data_types(self, data_types):
         list_of_type_docs = [self._get_type_doc_object(_type) for _type in data_types]
-        self._data_types = dict([(t.name, t) for t in list_of_type_docs])
+        self.data_types_catalog = dict([(t.name, t) for t in list_of_type_docs])
 
     @property
     def doc(self):
@@ -92,7 +91,7 @@ class LibraryDoc(object):
             entries.append('Importing')
         if self.keywords:
             entries.append('Keywords')
-        if self._data_types:
+        if self.data_types_catalog:
             entries.append('Data types')
         return '\n'.join('- `%s`' % entry for entry in entries)
 
@@ -117,11 +116,11 @@ class LibraryDoc(object):
 
     def _add_types_from_keyword(self, keyword):
         for arg in keyword.args:
-            for type_repr, typ in zip(arg.type_as_repr_list, arg.type):
-                if type_repr not in self._data_types:
+            for type_repr, typ in zip(arg.types_reprs, arg.types):
+                if type_repr not in self.data_types_catalog:
                     type_doc = self._get_type_doc_object(typ)
                     if type_doc:
-                        self._data_types[type_repr] = type_doc
+                        self.data_types_catalog[type_repr] = type_doc
 
     def _get_type_doc_object(self, typ):
         if isinstance(typ, (EnumDoc, TypedDictDoc)):
@@ -153,7 +152,7 @@ class LibraryDoc(object):
             init.doc = formatter.html(init.doc)
         for keyword in self.keywords:
             keyword.doc = formatter.html(keyword.doc)
-        for type_doc in self._data_types.values():
+        for type_doc in self.data_types_catalog.values():
             type_doc.doc = formatter.html(type_doc.doc)
 
     def to_dictionary(self):
@@ -170,7 +169,8 @@ class LibraryDoc(object):
             'tags': list(self.all_tags),
             'inits': [init.to_dictionary() for init in self.inits],
             'keywords': [kw.to_dictionary() for kw in self.keywords],
-            'dataTypes': [dt.to_dictionary() for dt in self.data_types]
+            'dataTypes': [dt.to_dictionary() for dt in
+                          sorted(self.data_types, key=lambda t: t.name)]
         }
 
     def to_json(self, indent=None):
@@ -246,7 +246,7 @@ class KeywordDoc(Sortable):
     def _arg_to_dict(self, arg):
         return {
             'name': arg.name,
-            'type': arg.type_as_repr_list,
+            'types': arg.types_reprs,
             'default': arg.default_repr,
             'kind': arg.kind,
             'required': arg.required,
@@ -254,7 +254,7 @@ class KeywordDoc(Sortable):
         }
 
 
-class TypedDictDoc:
+class TypedDictDoc(object):
 
     def __init__(self, name='', super='', doc='', items=None,
                  required_keys=None, optional_keys=None):
@@ -305,7 +305,7 @@ class TypedDictDoc:
         }
 
 
-class EnumDoc:
+class EnumDoc(object):
 
     def __init__(self, name='', super='', doc='', members=None):
         self.name = name

@@ -45,7 +45,7 @@
     function linkArgs(container, typeNames) {
       container.forEach(function(k) {
           k.args.forEach(function (arg) {
-            arg.linked = arg.type.filter(function(value) {return typeNames.includes(value)});
+            arg.linked = arg.types.filter(function(value) {return typeNames.includes(value)});
           })
         }
       );
@@ -334,10 +334,10 @@
                       </div>
                     {{/if}}
 
-                    {{if $value.type.length}}
-                      <span class="arg-type" title="Argument '${$value.name}' will be converter to type ${$value.type}">
+                    {{if $value.types.length}}
+                      <span class="arg-type" title="Argument '${$value.name}' will be converter to type ${$value.types}">
                         ${( $data.linked = $value.linked ),''}
-                        &lt;{{each $value.type}}{{if $data.linked.includes($value)}}<a class="type" href="#${$value}">${$value}</a>{{else}}<span class="type">${$value}</span>{{/if}}{{/each}}&gt;
+                        {{each $value.types}}&lt;{{if $data.linked.includes($value)}}<a class="type" href="#${$value}">${$value}</a>{{else}}<span class="type">${$value}</span>{{/if}}&gt;{{/each}}
                       </span>
                     {{/if}}
                   {{/each}}
@@ -448,10 +448,10 @@
                       </div>
                     {{/if}}
 
-                    {{if $value.type.length}}
-                      <span class="arg-type" title="Argument '${$value.name}' will be converter to type ${$value.type}">
+                    {{if $value.types.length}}
+                      <span class="arg-type" title="Argument '${$value.name}' will be converter to type ${$value.types}">
                         ${( $data.linked = $value.linked ),''}
-                        &lt;{{each $value.type}}{{if $data.linked.includes($value)}}<a class="type" href="#${$value}">${$value}</a>{{else}}<span class="type">${$value}</span>{{/if}}{{/each}}&gt;
+                        {{each $value.types}}&lt;{{if $data.linked.includes($value)}}<a class="type" href="#${$value}">${$value}</a>{{else}}<span class="type">${$value}</span>{{/if}}&gt;<span class="or"></span>{{/each}}
                       </span>
                     {{/if}}
                   {{/each}}
