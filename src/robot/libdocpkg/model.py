@@ -20,22 +20,28 @@ import json
 import re
 try:
     from enum import Enum
+    EnumType = type(Enum)
 except ImportError:  # Standard in Py 3.4+ but can be separately installed
-    class Enum(object):
+    class EnumType(object):
         pass
 
 try:
-    from typing_extensions import TypedDict
-
-    class _TypedDictDummy(TypedDict):
-        pass
-    TypedDictType = type(_TypedDictDummy)
+    from typing import TypedDict
+    TypedDictType = type(TypedDict('TypedDictDummy', {}))
 except ImportError:
-    TypedDictType = None
+    class TypedDictType(object):
+        pass
+
+try:
+    from typing_extensions import TypedDict as ExtTypedDict
+    ExtTypedDictType = type(ExtTypedDict('TypedDictDummy', {}))
+except ImportError:
+    class ExtTypedDictType(object):
+        pass
 
 from robot.model import Tags
 from robot.utils import (IRONPYTHON, getshortdoc, get_timestamp,
-                         Sortable, setter, unicode, unic)
+                         Sortable, setter, type_name, unicode, unic)
 
 from .htmlutils import HtmlToText, DocFormatter
 from .writer import LibdocWriter
@@ -55,7 +61,7 @@ class LibraryDoc(object):
         self.doc_format = doc_format
         self.source = source
         self.lineno = lineno
-        self._data_types = dict()
+        self._data_types = {}
         self.inits = []
         self.keywords = []
 
@@ -66,7 +72,7 @@ class LibraryDoc(object):
 
     @data_types.setter
     def data_types(self, data_types):
-        list_of_type_docs = [self._get_type_doc(_type) for _type in data_types]
+        list_of_type_docs = [self._get_type_doc_object(_type) for _type in data_types]
         self._data_types = dict([(t.name, t) for t in list_of_type_docs])
 
     @property
@@ -111,34 +117,25 @@ class LibraryDoc(object):
 
     def _add_types_from_keyword(self, keyword):
         for arg in keyword.args:
-            if arg.type:
-                for type_repr, _type in zip(arg.type_as_repr_list, arg.type):
-                    if (type_repr not in self._data_types
-                            and isinstance(_type, type)
-                            and type(_type) is not type):
-                        self._data_types[type_repr] = self._get_type_doc(_type)
+            for type_repr, typ in zip(arg.type_as_repr_list, arg.type):
+                if type_repr not in self._data_types:
+                    type_doc = self._get_type_doc_object(typ)
+                    if type_doc:
+                        self._data_types[type_repr] = type_doc
 
-    def _get_type_doc(self, arg_type):
-        if isinstance(arg_type, (EnumDoc, TypedDictDoc)):
-            return arg_type
-        elif self._is_TypedDictType(arg_type):
-            return TypedDictDoc(arg_type)
-        elif self._is_EnumType(arg_type):
-            return EnumDoc(arg_type)
-
-    def _is_TypedDictType(self, arg_type):
-        return (TypedDictType
-                and isinstance(arg_type, TypedDictType)
-                ) or (
-                isinstance(arg_type, dict)
-                and arg_type.get('super', None) == 'TypedDict')
-
-    def _is_EnumType(self, arg_type):
-        return (isclass(arg_type)
-                and issubclass(arg_type, Enum)
-                ) or (
-                isinstance(arg_type, dict)
-                and arg_type.get('super', None) == 'Enum')
+    def _get_type_doc_object(self, typ):
+        if isinstance(typ, (EnumDoc, TypedDictDoc)):
+            return typ
+        if isinstance(typ, (TypedDictType, ExtTypedDictType)):
+            return TypedDictDoc.from_TypedDict(typ)
+        if isinstance(typ, EnumType):
+            return EnumDoc.from_Enum(typ)
+        if isinstance(typ, dict):
+            if typ.get('super', None) == 'TypedDict':
+                return TypedDictDoc.from_dict(typ)
+            if typ.get('super', None) == 'Enum':
+                return EnumDoc.from_dict(typ)
+        return None
 
     @property
     def all_tags(self):
@@ -259,29 +256,43 @@ class KeywordDoc(Sortable):
 
 class TypedDictDoc:
 
-    def __init__(self, type_info=None, name='', super='', doc='', items=None,
+    def __init__(self, name='', super='', doc='', items=None,
                  required_keys=None, optional_keys=None):
         self.name = name
         self.super = super
         self.doc = doc
-        self.items = items or dict()
-        self.required_keys = required_keys or list()
-        self.optional_keys = optional_keys or list()
-        if isinstance(type_info, dict):
-            self.name = type_info['name']
-            self.super = type_info['super']
-            self.doc = type_info['doc']
-            self.items = type_info['items']
-            self.required_keys = type_info['required_keys']
-            self.optional_keys = type_info['optional_keys']
-        elif TypedDictType and isinstance(type_info, TypedDictType):
-            self.name = type_info.__name__
-            self.super = 'TypedDict'
-            self.doc = type_info.__doc__ if type_info.__doc__ else ''
-            for key, value in type_info.__annotations__.items():
-                self.items[key] = value.__name__ if isclass(value) else unic(value)
-            self.required_keys = list(type_info.__required_keys__)
-            self.optional_keys = list(type_info.__optional_keys__)
+        self.items = items or {}
+        self.required_keys = required_keys or []
+        self.optional_keys = optional_keys or []
+
+    @classmethod
+    def from_dict(cls, type_doc):
+        if isinstance(type_doc, dict):
+            return cls(name=type_doc['name'],
+                       super=type_doc['super'],
+                       doc=type_doc['doc'],
+                       items=type_doc['items'],
+                       required_keys=type_doc['required_keys'],
+                       optional_keys=type_doc['optional_keys'])
+        raise TypeError(
+            'TypedDictDoc.from_dict() requires dictionary types but got %s.'
+            % type_name(type_doc))
+
+    @classmethod
+    def from_TypedDict(cls, typed_dict):
+        if isinstance(typed_dict, (TypedDictType, ExtTypedDictType)):
+            items = {}
+            for key, value in typed_dict.__annotations__.items():
+                items[key] = value.__name__ if isclass(value) else unic(value)
+            return cls(name=typed_dict.__name__,
+                       super='TypedDict',
+                       doc=typed_dict.__doc__ if typed_dict.__doc__ else '',
+                       items=items,
+                       required_keys=list(getattr(typed_dict, '__required_keys__', [])),
+                       optional_keys=list(getattr(typed_dict, '__optional_keys__', [])))
+        raise TypeError(
+            'TypedDictDoc.from_TypedDict() requires a TypedDict but got %s.'
+            % type_name(typed_dict))
 
     def to_dictionary(self):
         return {
@@ -296,22 +307,34 @@ class TypedDictDoc:
 
 class EnumDoc:
 
-    def __init__(self, type_info=None, name='', super='', doc='', members=None):
+    def __init__(self, name='', super='', doc='', members=None):
         self.name = name
         self.super = super
         self.doc = doc
-        self.members = members or list()
-        if isinstance(type_info, dict):
-            self.name = type_info['name']
-            self.super = type_info['super']
-            self.doc = type_info['doc']
-            self.members = type_info['members']
-        elif isclass(type_info) and issubclass(type_info, Enum):
-            self.name = type_info.__name__
-            self.super = 'Enum'
-            self.doc = type_info.__doc__ or ''
-            self.members = [{'name': name, 'value': unicode(member.value)}
-                            for name, member in type_info.__members__.items()]
+        self.members = members or []
+
+    @classmethod
+    def from_dict(cls, type_doc):
+        if isinstance(type_doc, dict):
+            return cls(name=type_doc['name'],
+                       super=type_doc['super'],
+                       doc=type_doc['doc'],
+                       members=type_doc['members'])
+        raise TypeError(
+            'EnumDoc.from_dict() requires dictionary types but got %s.'
+            % type_name(type_doc))
+
+    @classmethod
+    def from_Enum(cls, enum_type):
+        if isinstance(enum_type, EnumType):
+            return cls(name=enum_type.__name__,
+                       super='Enum',
+                       doc=enum_type.__doc__ or '',
+                       members=[{'name': name, 'value': unicode(member.value)}
+                                for name, member in enum_type.__members__.items()])
+        raise TypeError(
+            'EnumDoc.from_Enum() requires Enum types but got %s.'
+            % type_name(enum_type))
 
     def to_dictionary(self):
         return {

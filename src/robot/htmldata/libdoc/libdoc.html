@@ -516,8 +516,8 @@
                 <div class="typed-dict-annotation">
                 <span class="typed-dict-item"
                 >{{{each(key, val) items}}<br><span
-                 class="td-item {{if required_keys.indexOf(key) != -1}}required-key{{else}}optional-key{{/if}}"
-                 title="{{if required_keys.indexOf(key) != -1}}required key{{else}}optional key{{/if}}"
+                 class="td-item {{if required_keys.indexOf(key) != -1}}required-key{{else optional_keys.indexOf(key) != -1}}optional-key{{/if}}"
+                 title="{{if required_keys.indexOf(key) != -1}}required key{{else optional_keys.indexOf(key) != -1}}optional key{{/if}}"
                  >'${key}': </span>
                    <span class="td-type">&lt;${val}&gt;</span>{{/each}}<br>}</span>
                 </div>
