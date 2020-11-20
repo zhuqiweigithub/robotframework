@@ -81,6 +81,7 @@
         scrollToHash();
         setTimeout(function() {
           document.getElementById("keyword-statistics-header").innerText = '' + libdoc.keywords.length;
+          document.getElementById("type-statistics-header").innerText = '' + libdoc.dataTypes.length;
           if (storage.get('keyword-wall') === 'open') {
             openKeywordWall();
           }
@@ -140,7 +141,7 @@
         let regexp = new RegExp(patternRegexp, 'i');
         let test = regexp.test.bind(regexp);
         let result = {};
-        let matchCount = 0;
+        let keywordMatchCount = 0;
         result.keywords = util.map(libdoc.keywords, function (kw) {
             kw = $.extend({}, kw);
             kw.hidden =  !(include.name && test(kw.name)) &&
@@ -148,14 +149,15 @@
                           !(include.doc && test($(kw.doc).text())) &&
                           !(include.tags && util.any(util.map(kw.tags, test)));
             if (!kw.hidden)
-                matchCount++;
+                keywordMatchCount++;
             return kw;
         });
+        let typeMatchCount = 0;
         result.dataTypes = util.map(libdoc.dataTypes, function (dataType) {
             dataType = $.extend({}, dataType);
             dataType.hidden =  !(include.name && test(dataType.name));
             if (!dataType.hidden)
-                matchCount++;
+                typeMatchCount++;
             return dataType;
         });
         renderTemplate('keyword-shortcuts', result);
@@ -164,8 +166,9 @@
           libdoc.selectedTag = include.tagsExact ? pattern : "";
           renderTemplate('tags-shortcuts', libdoc);
         }
-        document.getElementById("keyword-statistics-header").innerText = matchCount + ' / ' + result.keywords.length;
-        if (matchCount === 0)
+        document.getElementById("keyword-statistics-header").innerText = keywordMatchCount + ' / ' + result.keywords.length;
+        document.getElementById("type-statistics-header").innerText = typeMatchCount + ' / ' + result.dataTypes.length;
+        if (keywordMatchCount === 0)
             $('#keywords-container').find('table').empty();
     }
 
@@ -250,6 +253,7 @@
             renderTemplate('tags', libdoc);
         }
         document.getElementById("keyword-statistics-header").innerText = ''+libdoc.keywords.length;
+        document.getElementById("type-statistics-header").innerText = ''+libdoc.dataTypes.length;
         history.replaceState && history.replaceState(null, '', location.pathname);
     }
 
@@ -374,7 +378,9 @@
       </select>
       {{/if}}
       <div class="keywords-overview-header-row">
-      <h4>Keywords (<span id="keyword-statistics-header"></span>)</h4>
+      <h4>Keywords (<span id="keyword-statistics-header"></span>)
+      & Types (<span id="type-statistics-header"></span>)
+      </h4>
       <button id="toggle-keyword-shortcuts" onclick="toggleShortcuts()">+</button>
       </div>
       <ul class="shortcuts" id="keyword-shortcuts-container">
