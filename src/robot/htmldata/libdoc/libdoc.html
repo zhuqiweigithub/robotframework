@@ -385,7 +385,7 @@
       {{/if}}
       <div class="keywords-overview-header-row">
       <h4>Keywords (<span id="keyword-statistics-header"></span>)
-      {{if dataTypes.length}}& Types (<span id="type-statistics-header"></span>){{/if}}
+      {{if dataTypes.length}}& <span class="data-type">Types</span> (<span id="type-statistics-header"></span>){{/if}}
       </h4>
       <button id="toggle-keyword-shortcuts" onclick="toggleShortcuts()">+</button>
       </div>
@@ -410,7 +410,7 @@
     <li>
       <a href="#${encodeURIComponent($value.name)}"
        onclick="closeMenu()"
-       class="data-type"
+       class="data-type match"
        title="${$value.shortdoc}">${$value.name}</a>
     </li>
     {{/if}}
