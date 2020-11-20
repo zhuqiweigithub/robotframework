@@ -149,7 +149,14 @@
                           !(include.tags && util.any(util.map(kw.tags, test)));
             if (!kw.hidden)
                 matchCount++;
-            return kw
+            return kw;
+        });
+        result.dataTypes = util.map(libdoc.dataTypes, function (dataType) {
+            dataType = $.extend({}, dataType);
+            dataType.hidden =  !(include.name && test(dataType.name));
+            if (!dataType.hidden)
+                matchCount++;
+            return dataType;
         });
         renderTemplate('keyword-shortcuts', result);
         renderTemplate('keywords', result);
@@ -386,6 +393,16 @@
     </li>
     {{/if}}
     {{/each}}
+    {{each dataTypes}}
+    {{if !$value.hidden}}
+    <li>
+      <a href="#${encodeURIComponent($value.name)}"
+       onclick="closeMenu()"
+       class="data-type"
+       title="${$value.shortdoc}">${$value.name}</a>
+    </li>
+    {{/if}}
+    {{/each}}
     {{each keywords}}
     {{if $value.hidden}}
     <li>
@@ -397,12 +414,14 @@
     {{/if}}
     {{/each}}
     {{each dataTypes}}
+    {{if $value.hidden}}
     <li>
       <a href="#${encodeURIComponent($value.name)}"
        onclick="closeMenu()"
-       class="data-type"
+       class="data-type no-match"
        title="${$value.shortdoc}">${$value.name}</a>
     </li>
+    {{/if}}
     {{/each}}
 </script>
 
