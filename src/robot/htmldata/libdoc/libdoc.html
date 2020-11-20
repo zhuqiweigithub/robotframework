@@ -396,6 +396,14 @@
     </li>
     {{/if}}
     {{/each}}
+    {{each dataTypes}}
+    <li>
+      <a href="#${encodeURIComponent($value.name)}"
+       onclick="closeMenu()"
+       class="data-type"
+       title="${$value.shortdoc}">${$value.name}</a>
+    </li>
+    {{/each}}
 </script>
 
 
