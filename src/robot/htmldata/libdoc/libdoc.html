@@ -81,7 +81,9 @@
         scrollToHash();
         setTimeout(function() {
           document.getElementById("keyword-statistics-header").innerText = '' + libdoc.keywords.length;
-          document.getElementById("type-statistics-header").innerText = '' + libdoc.dataTypes.length;
+          if (libdoc.dataTypes.length) {
+            document.getElementById("type-statistics-header").innerText = '' + libdoc.dataTypes.length;
+          }
           if (storage.get('keyword-wall') === 'open') {
             openKeywordWall();
           }
@@ -167,7 +169,9 @@
           renderTemplate('tags-shortcuts', libdoc);
         }
         document.getElementById("keyword-statistics-header").innerText = keywordMatchCount + ' / ' + result.keywords.length;
-        document.getElementById("type-statistics-header").innerText = typeMatchCount + ' / ' + result.dataTypes.length;
+        if (libdoc.dataTypes.length) {
+          document.getElementById("type-statistics-header").innerText = typeMatchCount + ' / ' + result.dataTypes.length;
+        }
         if (keywordMatchCount === 0)
             $('#keywords-container').find('table').empty();
     }
@@ -253,7 +257,9 @@
             renderTemplate('tags', libdoc);
         }
         document.getElementById("keyword-statistics-header").innerText = ''+libdoc.keywords.length;
-        document.getElementById("type-statistics-header").innerText = ''+libdoc.dataTypes.length;
+        if (libdoc.dataTypes.length) {
+          document.getElementById("type-statistics-header").innerText = '' + libdoc.dataTypes.length;
+        }
         history.replaceState && history.replaceState(null, '', location.pathname);
     }
 
@@ -379,7 +385,7 @@
       {{/if}}
       <div class="keywords-overview-header-row">
       <h4>Keywords (<span id="keyword-statistics-header"></span>)
-      & Types (<span id="type-statistics-header"></span>)
+      {{if dataTypes.length}}& Types (<span id="type-statistics-header"></span>){{/if}}
       </h4>
       <button id="toggle-keyword-shortcuts" onclick="toggleShortcuts()">+</button>
       </div>
