@@ -741,8 +741,8 @@ to make the syntax easier to read.
 
 .. _if block:
 
-Conditional execution with IF and other ways
---------------------------------------------
+Conditional execution with IF
+-----------------------------
 
 In general, it is not recommended to have conditional logic in test
 cases, or even in user keywords, because it can make them hard to
